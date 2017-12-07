@@ -1,43 +1,40 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\QueueNotExistException;
-use Aliyun\MNS\Model\QueueAttributes;
+use AliyunMNS\Constants;
+use AliyunMNS\Model\QueueAttributes;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\QueueNotExistException;
+use AliyunMNS\Exception\InvalidArgumentException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
 
 class GetQueueAttributeResponse extends BaseResponse
 {
-
     private $attributes;
-
 
     public function __construct()
     {
-        $this->attributes = null;
+        $this->attributes = NULL;
     }
-
 
     public function getQueueAttributes()
     {
         return $this->attributes;
     }
 
-
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 200) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
 
-        $xmlReader = new \XMLReader();
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $this->attributes = QueueAttributes::fromXML($xmlReader);
         } catch (\Exception $e) {
             throw new MnsException($statusCode, $e->getMessage(), $e);
@@ -47,22 +44,22 @@ class GetQueueAttributeResponse extends BaseResponse
 
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $result = XMLParser::parseNormalError($xmlReader);
-            if ($result['Code'] == Constants::QUEUE_NOT_EXIST) {
+            if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
+            {
                 throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -72,3 +69,5 @@ class GetQueueAttributeResponse extends BaseResponse
         }
     }
 }
+
+?>

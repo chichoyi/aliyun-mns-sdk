@@ -1,34 +1,33 @@
 <?php
+namespace AliyunMNS\Traits;
 
-namespace Aliyun\MNS\Traits;
-
-use Aliyun\MNS\Model\Message;
+use AliyunMNS\Model\Message;
+use AliyunMNS\Traits\MessagePropertiesForPeek;
 
 trait MessagePropertiesForReceive
 {
-
     use MessagePropertiesForPeek;
 
     protected $receiptHandle;
-
-
-    public function readMessagePropertiesForReceiveXML(\XMLReader $xmlReader)
-    {
-        $message                = Message::fromXML($xmlReader);
-        $this->messageId        = $message->getMessageId();
-        $this->messageBodyMD5   = $message->getMessageBodyMD5();
-        $this->messageBody      = $message->getMessageBody();
-        $this->enqueueTime      = $message->getEnqueueTime();
-        $this->nextVisibleTime  = $message->getNextVisibleTime();
-        $this->firstDequeueTime = $message->getFirstDequeueTime();
-        $this->dequeueCount     = $message->getDequeueCount();
-        $this->priority         = $message->getPriority();
-        $this->receiptHandle    = $message->getReceiptHandle();
-    }
-
 
     public function getReceiptHandle()
     {
         return $this->receiptHandle;
     }
+
+    public function readMessagePropertiesForReceiveXML(\XMLReader $xmlReader, $base64)
+    {
+        $message = Message::fromXML($xmlReader, $base64);
+        $this->messageId = $message->getMessageId();
+        $this->messageBodyMD5 = $message->getMessageBodyMD5();
+        $this->messageBody = $message->getMessageBody();
+        $this->enqueueTime = $message->getEnqueueTime();
+        $this->nextVisibleTime = $message->getNextVisibleTime();
+        $this->firstDequeueTime = $message->getFirstDequeueTime();
+        $this->dequeueCount = $message->getDequeueCount();
+        $this->priority = $message->getPriority();
+        $this->receiptHandle = $message->getReceiptHandle();
+    }
 }
+
+?>

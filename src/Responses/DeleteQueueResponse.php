@@ -1,41 +1,38 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Exception\MnsException;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
 
 class DeleteQueueResponse extends BaseResponse
 {
-
     public function __construct()
     {
     }
-
 
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 204) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $result = XMLParser::parseNormalError($xmlReader);
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -45,3 +42,5 @@ class DeleteQueueResponse extends BaseResponse
         }
     }
 }
+
+?>

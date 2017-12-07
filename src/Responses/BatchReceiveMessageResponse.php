@@ -1,47 +1,60 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\MessageNotExistException;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\QueueNotExistException;
-use Aliyun\MNS\Model\Message;
+use AliyunMNS\Constants;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\QueueNotExistException;
+use AliyunMNS\Exception\MessageNotExistException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
+use AliyunMNS\Model\Message;
 
 class BatchReceiveMessageResponse extends BaseResponse
 {
-
     protected $messages;
 
+    // boolean, whether the message body will be decoded as base64
+    protected $base64;
 
-    public function __construct()
+    public function __construct($base64 = TRUE)
     {
         $this->messages = array();
+        $this->base64 = $base64;
     }
 
+    public function setBase64($base64)
+    {
+        $this->base64 = $base64;
+    }
+
+    public function isBase64()
+    {
+        return ($this->base64 == TRUE);
+    }
 
     public function getMessages()
     {
         return $this->messages;
     }
 
-
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 200) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
 
-        $xmlReader = new \XMLReader();
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
-            while ($xmlReader->read()) {
-                if ($xmlReader->nodeType == \XMLReader::ELEMENT && $xmlReader->name == 'Message') {
-                    $this->messages[] = Message::fromXML($xmlReader);
+            while ($xmlReader->read())
+            {
+                if ($xmlReader->nodeType == \XMLReader::ELEMENT
+                    && $xmlReader->name == 'Message')
+                {
+                    $this->messages[] = Message::fromXML($xmlReader, $this->base64);
                 }
             }
         } catch (\Exception $e) {
@@ -51,25 +64,26 @@ class BatchReceiveMessageResponse extends BaseResponse
         }
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $result = XMLParser::parseNormalError($xmlReader);
-            if ($result['Code'] == Constants::QUEUE_NOT_EXIST) {
+            if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
+            {
                 throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::MESSAGE_NOT_EXIST) {
+            if ($result['Code'] == Constants::MESSAGE_NOT_EXIST)
+            {
                 throw new MessageNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -80,3 +94,5 @@ class BatchReceiveMessageResponse extends BaseResponse
 
     }
 }
+
+?>

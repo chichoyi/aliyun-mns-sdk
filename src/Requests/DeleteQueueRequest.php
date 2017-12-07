@@ -1,12 +1,13 @@
 <?php
+namespace AliyunMNS\Requests;
 
-namespace Aliyun\MNS\Requests;
+use AliyunMNS\Constants;
+use AliyunMNS\Requests\BaseRequest;
+use AliyunMNS\Model\QueueAttributes;
 
 class DeleteQueueRequest extends BaseRequest
 {
-
     private $queueName;
-
 
     public function __construct($queueName)
     {
@@ -14,21 +15,19 @@ class DeleteQueueRequest extends BaseRequest
         $this->queueName = $queueName;
     }
 
-
     public function getQueueName()
     {
         return $this->queueName;
     }
 
-
     public function generateBody()
     {
-        return null;
+        return NULL;
     }
-
 
     public function generateQueryString()
     {
-        return null;
+        return NULL;
     }
 }
+?>

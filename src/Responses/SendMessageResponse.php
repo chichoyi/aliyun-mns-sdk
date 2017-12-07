@@ -1,38 +1,34 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\InvalidArgumentException;
-use Aliyun\MNS\Exception\MalformedXMLException;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\QueueNotExistException;
-use Aliyun\MNS\Traits\MessageIdAndMD5;
+use AliyunMNS\Constants;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\QueueNotExistException;
+use AliyunMNS\Exception\InvalidArgumentException;
+use AliyunMNS\Exception\MalformedXMLException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
+use AliyunMNS\Traits\MessageIdAndMD5;
 
 class SendMessageResponse extends BaseResponse
 {
-
     use MessageIdAndMD5;
-
 
     public function __construct()
     {
     }
 
-
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 201) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
 
-        $xmlReader = new \XMLReader();
+        $xmlReader = $this->loadXmlContent($content);
         try {
-            $xmlReader->XML($content);
             $this->readMessageIdAndMD5XML($xmlReader);
         } catch (\Exception $e) {
             throw new MnsException($statusCode, $e->getMessage(), $e);
@@ -42,28 +38,29 @@ class SendMessageResponse extends BaseResponse
 
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
         try {
-            $xmlReader->XML($content);
             $result = XMLParser::parseNormalError($xmlReader);
-            if ($result['Code'] == Constants::QUEUE_NOT_EXIST) {
+            if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
+            {
                 throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::INVALID_ARGUMENT) {
+            if ($result['Code'] == Constants::INVALID_ARGUMENT)
+            {
                 throw new InvalidArgumentException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::MALFORMED_XML) {
+            if ($result['Code'] == Constants::MALFORMED_XML)
+            {
                 throw new MalformedXMLException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -73,3 +70,5 @@ class SendMessageResponse extends BaseResponse
         }
     }
 }
+
+?>

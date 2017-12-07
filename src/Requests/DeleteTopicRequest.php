@@ -1,12 +1,13 @@
 <?php
+namespace AliyunMNS\Requests;
 
-namespace Aliyun\MNS\Requests;
+use AliyunMNS\Constants;
+use AliyunMNS\Requests\BaseRequest;
+use AliyunMNS\Model\TopicAttributes;
 
 class DeleteTopicRequest extends BaseRequest
 {
-
     private $topicName;
-
 
     public function __construct($topicName)
     {
@@ -14,21 +15,19 @@ class DeleteTopicRequest extends BaseRequest
         $this->topicName = $topicName;
     }
 
-
     public function getTopicName()
     {
         return $this->topicName;
     }
 
-
     public function generateBody()
     {
-        return null;
+        return NULL;
     }
-
 
     public function generateQueryString()
     {
-        return null;
+        return NULL;
     }
 }
+?>

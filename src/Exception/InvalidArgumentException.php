@@ -1,8 +1,10 @@
 <?php
+namespace AliyunMNS\Exception;
 
-namespace Aliyun\MNS\Exception;
+use AliyunMNS\Exception\MnsException;
 
 class InvalidArgumentException extends MnsException
 {
-
 }
+
+?>

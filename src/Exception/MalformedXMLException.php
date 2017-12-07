@@ -1,9 +1,10 @@
 <?php
+namespace AliyunMNS\Exception;
 
-namespace Aliyun\MNS\Exception;
+use AliyunMNS\Exception\MnsException;
 
 class MalformedXMLException extends MnsException
 {
-
 }
 
+?>

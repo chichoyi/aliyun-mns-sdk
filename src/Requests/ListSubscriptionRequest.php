@@ -1,20 +1,20 @@
 <?php
+namespace AliyunMNS\Requests;
 
-namespace Aliyun\MNS\Requests;
+use AliyunMNS\Requests\BaseRequest;
 
 class ListSubscriptionRequest extends BaseRequest
 {
-
     private $topicName;
-
     private $retNum;
-
     private $prefix;
-
     private $marker;
 
-
-    public function __construct($topicName, $retNum = null, $prefix = null, $marker = null)
+    public function __construct(
+        $topicName,
+        $retNum = NULL,
+        $prefix = NULL,
+        $marker = NULL)
     {
         parent::__construct('get', 'topics/' . $topicName . '/subscriptions');
 
@@ -23,73 +23,75 @@ class ListSubscriptionRequest extends BaseRequest
         $this->setPrefix($prefix);
         $this->setMarker($marker);
     }
-
-
+    
     public function getTopicName()
     {
         return $this->topicName;
     }
-
 
     public function getRetNum()
     {
         return $this->retNum;
     }
 
-
     public function setRetNum($retNum)
     {
         $this->retNum = $retNum;
-        if ($retNum != null) {
+        if ($retNum != NULL)
+        {
             $this->setHeader("x-mns-ret-number", $retNum);
-        } else {
+        }
+        else
+        {
             $this->removeHeader("x-mns-ret-number");
         }
     }
-
 
     public function getPrefix()
     {
         return $this->prefix;
     }
 
-
     public function setPrefix($prefix)
     {
         $this->prefis = $prefix;
-        if ($prefix != null) {
+        if ($prefix != NULL)
+        {
             $this->setHeader("x-mns-prefix", $prefix);
-        } else {
+        }
+        else
+        {
             $this->removeHeader("x-mns-prefix");
         }
     }
-
 
     public function getMarker()
     {
         return $this->marker;
     }
 
-
     public function setMarker($marker)
     {
         $this->marker = $marker;
-        if ($marker != null) {
+        if ($marker != NULL)
+        {
             $this->setHeader("x-mns-marker", $marker);
-        } else {
+        }
+        else
+        {
             $this->removeHeader("x-mns-marker");
         }
     }
 
-
     public function generateBody()
     {
-        return null;
+        return NULL;
     }
-
 
     public function generateQueryString()
     {
-        return null;
+        return NULL;
     }
 }
+
+?>

@@ -1,9 +1,9 @@
 <?php
+namespace AliyunMNS\Exception;
 
-namespace Aliyun\MNS\Exception;
-
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Model\DeleteMessageErrorItem;
+use AliyunMNS\Constants;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Model\DeleteMessageErrorItem;
 
 /**
  * BatchDelete could fail for some receipt handles,
@@ -12,26 +12,24 @@ use Aliyun\MNS\Model\DeleteMessageErrorItem;
  */
 class BatchDeleteFailException extends MnsException
 {
-
     protected $deleteMessageErrorItems;
 
-
-    public function __construct($code, $message, $previousException = null, $requestId = null, $hostId = null)
+    public function __construct($code, $message, $previousException = NULL, $requestId = NULL, $hostId = NULL)
     {
         parent::__construct($code, $message, $previousException, Constants::BATCH_DELETE_FAIL, $requestId, $hostId);
 
         $this->deleteMessageErrorItems = array();
     }
 
-
     public function addDeleteMessageErrorItem(DeleteMessageErrorItem $item)
     {
         $this->deleteMessageErrorItems[] = $item;
     }
-
 
     public function getDeleteMessageErrorItems()
     {
         return $this->deleteMessageErrorItems;
     }
 }
+
+?>

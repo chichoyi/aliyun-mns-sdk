@@ -1,55 +1,49 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\InvalidArgumentException;
-use Aliyun\MNS\Exception\MessageNotExistException;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\QueueNotExistException;
-use Aliyun\MNS\Exception\ReceiptHandleErrorException;
-use Aliyun\MNS\Model\Message;
+use AliyunMNS\Constants;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\QueueNotExistException;
+use AliyunMNS\Exception\MessageNotExistException;
+use AliyunMNS\Exception\InvalidArgumentException;
+use AliyunMNS\Exception\ReceiptHandleErrorException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
+use AliyunMNS\Model\Message;
 
 class ChangeMessageVisibilityResponse extends BaseResponse
 {
-
     protected $receiptHandle;
-
     protected $nextVisibleTime;
-
 
     public function __construct()
     {
     }
-
 
     public function getReceiptHandle()
     {
         return $this->receiptHandle;
     }
 
-
     public function getNextVisibleTime()
     {
         return $this->nextVisibleTime;
     }
 
-
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 200) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
 
-        $xmlReader = new \XMLReader();
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
-            $message               = Message::fromXML($xmlReader);
-            $this->receiptHandle   = $message->getReceiptHandle();
+            $message = Message::fromXML($xmlReader, TRUE);
+            $this->receiptHandle = $message->getReceiptHandle();
             $this->nextVisibleTime = $message->getNextVisibleTime();
         } catch (\Exception $e) {
             throw new MnsException($statusCode, $e->getMessage(), $e);
@@ -58,33 +52,36 @@ class ChangeMessageVisibilityResponse extends BaseResponse
         }
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $result = XMLParser::parseNormalError($xmlReader);
 
-            if ($result['Code'] == Constants::INVALID_ARGUMENT) {
+            if ($result['Code'] == Constants::INVALID_ARGUMENT)
+            {
                 throw new InvalidArgumentException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::QUEUE_NOT_EXIST) {
+            if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
+            {
                 throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::MESSAGE_NOT_EXIST) {
+            if ($result['Code'] == Constants::MESSAGE_NOT_EXIST)
+            {
                 throw new MessageNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
-            if ($result['Code'] == Constants::RECEIPT_HANDLE_ERROR) {
+            if ($result['Code'] == Constants::RECEIPT_HANDLE_ERROR)
+            {
                 throw new ReceiptHandleErrorException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
 
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -95,3 +92,5 @@ class ChangeMessageVisibilityResponse extends BaseResponse
 
     }
 }
+
+?>

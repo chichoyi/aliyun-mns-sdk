@@ -1,73 +1,88 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\TopicNotExistException;
-use Aliyun\MNS\Model\TopicAttributes;
+use AliyunMNS\Constants;
+use AliyunMNS\Model\TopicAttributes;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\TopicNotExistException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
 
 class GetTopicAttributeResponse extends BaseResponse
 {
-
     private $attributes;
-
 
     public function __construct()
     {
-        $this->attributes = null;
+        $this->attributes = NULL;
     }
-
 
     public function getTopicAttributes()
     {
         return $this->attributes;
     }
 
-
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
-        if ($statusCode == 200) {
-            $this->succeed = true;
-        } else {
+        if ($statusCode == 200)
+        {
+            $this->succeed = TRUE;
+        }
+        else
+        {
             $this->parseErrorResponse($statusCode, $content);
         }
 
-        $xmlReader = new \XMLReader();
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
             $this->attributes = TopicAttributes::fromXML($xmlReader);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             throw new MnsException($statusCode, $e->getMessage(), $e);
-        } catch (\Throwable $t) {
+        }
+        catch (\Throwable $t)
+        {
             throw new MnsException($statusCode, $t->getMessage());
         }
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
-        try {
-            $xmlReader->XML($content);
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
+        try
+        {
             $result = XMLParser::parseNormalError($xmlReader);
-            if ($result['Code'] == Constants::TOPIC_NOT_EXIST) {
+            if ($result['Code'] == Constants::TOPIC_NOT_EXIST)
+            {
                 throw new TopicNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
             }
             throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
-        } catch (\Exception $e) {
-            if ($exception != null) {
+        }
+        catch (\Exception $e)
+        {
+            if ($exception != NULL)
+            {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            }
+            elseif ($e instanceof MnsException)
+            {
                 throw $e;
-            } else {
+            }
+            else
+            {
                 throw new MnsException($statusCode, $e->getMessage());
             }
-        } catch (\Throwable $t) {
+        }
+        catch (\Throwable $t)
+        {
             throw new MnsException($statusCode, $t->getMessage());
         }
     }
 }
+
+?>

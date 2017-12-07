@@ -1,57 +1,55 @@
 <?php
+namespace AliyunMNS\Responses;
 
-namespace Aliyun\MNS\Responses;
-
-use Aliyun\MNS\Common\XMLParser;
-use Aliyun\MNS\Constants;
-use Aliyun\MNS\Exception\BatchDeleteFailException;
-use Aliyun\MNS\Exception\InvalidArgumentException;
-use Aliyun\MNS\Exception\MnsException;
-use Aliyun\MNS\Exception\QueueNotExistException;
-use Aliyun\MNS\Exception\ReceiptHandleErrorException;
-use Aliyun\MNS\Model\DeleteMessageErrorItem;
+use AliyunMNS\Constants;
+use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Exception\QueueNotExistException;
+use AliyunMNS\Exception\InvalidArgumentException;
+use AliyunMNS\Exception\BatchDeleteFailException;
+use AliyunMNS\Exception\ReceiptHandleErrorException;
+use AliyunMNS\Responses\BaseResponse;
+use AliyunMNS\Common\XMLParser;
+use AliyunMNS\Model\DeleteMessageErrorItem;
 
 class BatchDeleteMessageResponse extends BaseResponse
 {
-
     public function __construct()
     {
     }
-
 
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
         if ($statusCode == 204) {
-            $this->succeed = true;
+            $this->succeed = TRUE;
         } else {
             $this->parseErrorResponse($statusCode, $content);
         }
     }
 
-
-    public function parseErrorResponse($statusCode, $content, MnsException $exception = null)
+    public function parseErrorResponse($statusCode, $content, MnsException $exception = NULL)
     {
-        $this->succeed = false;
-        $xmlReader     = new \XMLReader();
+        $this->succeed = FALSE;
+        $xmlReader = $this->loadXmlContent($content);
+
         try {
-            $xmlReader->XML($content);
-            while ($xmlReader->read()) {
+            while ($xmlReader->read())
+            {
                 if ($xmlReader->nodeType == \XMLReader::ELEMENT) {
                     switch ($xmlReader->name) {
-                        case Constants::ERROR:
-                            $this->parseNormalErrorResponse($xmlReader);
-                            break;
-                        default: // case Constants::Messages
-                            $this->parseBatchDeleteErrorResponse($xmlReader);
-                            break;
+                    case Constants::ERROR:
+                        $this->parseNormalErrorResponse($xmlReader);
+                        break;
+                    default: // case Constants::Messages
+                        $this->parseBatchDeleteErrorResponse($xmlReader);
+                        break;
                     }
                 }
             }
         } catch (\Exception $e) {
-            if ($exception != null) {
+            if ($exception != NULL) {
                 throw $exception;
-            } elseif ($e instanceof MnsException) {
+            } elseif($e instanceof MnsException) {
                 throw $e;
             } else {
                 throw new MnsException($statusCode, $e->getMessage());
@@ -61,33 +59,37 @@ class BatchDeleteMessageResponse extends BaseResponse
         }
     }
 
-
     private function parseBatchDeleteErrorResponse($xmlReader)
     {
         $ex = new BatchDeleteFailException($this->statusCode, "BatchDeleteMessage Failed For Some ReceiptHandles");
-        while ($xmlReader->read()) {
+        while ($xmlReader->read())
+        {
             if ($xmlReader->nodeType == \XMLReader::ELEMENT && $xmlReader->name == Constants::ERROR) {
-                $ex->addDeleteMessageErrorItem(DeleteMessageErrorItem::fromXML($xmlReader));
+                $ex->addDeleteMessageErrorItem( DeleteMessageErrorItem::fromXML($xmlReader));
             }
         }
         throw $ex;
     }
 
-
     private function parseNormalErrorResponse($xmlReader)
     {
         $result = XMLParser::parseNormalError($xmlReader);
 
-        if ($result['Code'] == Constants::INVALID_ARGUMENT) {
+        if ($result['Code'] == Constants::INVALID_ARGUMENT)
+        {
             throw new InvalidArgumentException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
-        if ($result['Code'] == Constants::QUEUE_NOT_EXIST) {
+        if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
+        {
             throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
-        if ($result['Code'] == Constants::RECEIPT_HANDLE_ERROR) {
+        if ($result['Code'] == Constants::RECEIPT_HANDLE_ERROR)
+        {
             throw new ReceiptHandleErrorException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
 
         throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
     }
 }
+
+?>

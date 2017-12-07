@@ -1,12 +1,11 @@
 <?php
+namespace AliyunMNS\Requests;
 
-namespace Aliyun\MNS\Requests;
+use AliyunMNS\Requests\BaseRequest;
 
 class GetQueueAttributeRequest extends BaseRequest
 {
-
     private $queueName;
-
 
     public function __construct($queueName)
     {
@@ -15,21 +14,19 @@ class GetQueueAttributeRequest extends BaseRequest
         $this->queueName = $queueName;
     }
 
-
     public function getQueueName()
     {
         return $this->queueName;
     }
 
-
     public function generateBody()
     {
-        return null;
+        return NULL;
     }
-
 
     public function generateQueryString()
     {
-        return null;
+        return NULL;
     }
 }
+?>

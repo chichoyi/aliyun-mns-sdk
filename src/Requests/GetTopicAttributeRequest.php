@@ -1,12 +1,11 @@
 <?php
+namespace AliyunMNS\Requests;
 
-namespace Aliyun\MNS\Requests;
+use AliyunMNS\Requests\BaseRequest;
 
 class GetTopicAttributeRequest extends BaseRequest
 {
-
     private $topicName;
-
 
     public function __construct($topicName)
     {
@@ -15,21 +14,19 @@ class GetTopicAttributeRequest extends BaseRequest
         $this->topicName = $topicName;
     }
 
-
     public function getTopicName()
     {
         return $this->topicName;
     }
 
-
     public function generateBody()
     {
-        return null;
+        return NULL;
     }
-
 
     public function generateQueryString()
     {
-        return null;
+        return NULL;
     }
 }
+?>
